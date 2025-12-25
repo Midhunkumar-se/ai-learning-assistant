@@ -5,6 +5,18 @@ import {
   Route,
   Navigate,
 } from "react-router-dom";
+import LoginPage from "./pages/Auth/LoginPage";
+import RegisterPage from "./pages/Auth/RegisterPage";
+import NotFoundPage from "./pages/NotFoundPage";
+import DocumentsListPage from "./pages/documents/DocumentsListPage";
+import DocumentsDetailPage from "./pages/documents/DocumentsDetailPage";
+import FlashCardListPage from "./pages/Flashcards/FlashCardListPage";
+import FlashCardPage from "./pages/Flashcards/FlashCardPage";
+import QuizTakePage from "./pages/Quizzes/QuizTakePage";
+import QuizResultPage from "./pages/Quizzes/QuizResultPage";
+import ProfilePage from "./pages/Profile/ProfilePage";
+import ProtectedRoute from "./components/auth/ProtectedRoute";
+import DashboardPage from "./pages/Dashboard/DashboardPage";
 
 const App = () => {
   const isAuthenticated = false;
@@ -12,7 +24,7 @@ const App = () => {
 
   if (loading) {
     return (
-      <div className="">
+      <div className="flex items-center justify-center h-screen">
         <p>Loading...</p>
       </div>
     );
@@ -31,6 +43,22 @@ const App = () => {
             )
           }
         />
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/register" element={<RegisterPage />} />
+
+        {/* Protected Routes */}
+        <Route element={<ProtectedRoute />}>
+          <Route path="/dashboard" element={<DashboardPage />} />
+          <Route path="/documents" element={<DocumentsListPage />} />
+          <Route path="/documents/:id" element={<DocumentsDetailPage />} />
+          <Route path="/flashcards" element={<FlashCardListPage />} />
+          <Route path="/documents/:id/flashcards" element={<FlashCardPage />} />
+          <Route path="/quizzes/:quizId" element={<QuizTakePage />} />
+          <Route path="/quizzes/:quizId/results" element={<QuizResultPage />} />
+          <Route path="/profile" element={<ProfilePage />} />
+        </Route>
+
+        <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </Router>
   );
