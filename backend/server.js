@@ -6,6 +6,7 @@ import cors from "cors";
 import path from "path";
 import { fileURLToPath } from "url";
 import errorHandler from "./middleware/errorHandler.js";
+import connectDB from "./config/db.js";
 
 //ES6 module
 const __filename = fileURLToPath(import.meta.url);
