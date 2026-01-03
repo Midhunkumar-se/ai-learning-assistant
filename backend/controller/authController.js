@@ -76,6 +76,40 @@ export const login = async (req, res, next) => {
 
     //Check for user (include password for comparison)
     const user = await User.findOne({ email }).select("+password");
+
+    if (!user) {
+      return res.status(400).json({
+        success: false,
+        error: "Invalid credentials",
+        statusCode: 401,
+      });
+    }
+
+    //Check password
+    const isMatch = password === user.password;
+
+    if (!isMatch) {
+      return res.status(400).json({
+        success: false,
+        error: "Invalid credentials",
+        statusCode: 401,
+      });
+    }
+
+    //Generate Tokens
+    const token = generateToken(user._id);
+
+    res.status(200).json({
+      success: true,
+      user: {
+        id: user._id,
+        username: user.username,
+        email: user.email,
+        profileImage: user.profileImage,
+      },
+      token,
+      message: "Login successful",
+    });
   } catch (error) {
     next(error);
   }
@@ -86,6 +120,19 @@ export const login = async (req, res, next) => {
 //@access Private
 export const getProfile = async (req, res, next) => {
   try {
+    const user = await User.findById(req.user._id);
+
+    res.status(200).json({
+      success: true,
+      user: {
+        id: user._id,
+        username: user.username,
+        email: user.email,
+        profileImage: user.profileImage,
+        createdAt: user.createdAt,
+        updatedAt: user.updatedAt,
+      },
+    });
   } catch (error) {
     next(error);
   }
@@ -96,16 +143,65 @@ export const getProfile = async (req, res, next) => {
 //@access Private
 export const updateProfile = async (req, res, next) => {
   try {
+    const { username, email, profileImage } = req.body;
+
+    const user = await User.findById(req.user._id);
+
+    if (username) user.username = username;
+    if (email) user.email = email;
+    if (profileImage) user.profileImage = profileImage;
+
+    res.status(200).json({
+      success: true,
+      user: {
+        id: user._id,
+        username: user.username,
+        email: user.email,
+        profileImage: user.profileImage,
+      },
+      message: "Profile update successfully",
+    });
   } catch (error) {
     next(error);
   }
 };
 
-//@desc Chnage password
+//@desc Change password
 //@route POST /api/auth/change-password
 //@access Private
 export const changePassword = async (req, res, next) => {
   try {
+    const { currentPassword, newPassword } = req.body;
+
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({
+        success: false,
+        error: "Please provide current and new password",
+        statusCode: 400,
+      });
+    }
+
+    const user = await User.findById(req.user._id).select("+password");
+
+    // Check current password
+    const isMatch = user.password === currentPassword;
+
+    if (!isMatch) {
+      return res.status(401).json({
+        success: false,
+        error: "Current password is incorrect",
+        statusCode: 401,
+      });
+    }
+
+    // Update password
+    user.password = newPassword;
+    await user.save();
+
+    res.status(200).json({
+      success: true,
+      error: "Password changed successfully",
+    });
   } catch (error) {
     next(error);
   }
